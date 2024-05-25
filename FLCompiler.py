@@ -1,4 +1,3 @@
-from collections import deque
 import sys
 
 # To-Do
@@ -8,53 +7,54 @@ import sys
 # 3. Read bytecode string and print corresponding python code to the .py file
 # ΘΣΨ
 
-# this is the input file with the FeatherLang code
-flFile = open(sys.argv[1])
+def main():
+    # this is the input file with the FeatherLang code
+    flFile = open(sys.argv[1])
 
-# gets the name of the file w/o .txt and makes a corresponding .py
-nameLength = len(flFile.name)
-pyFile = open(flFile.name[:nameLength-4] + ".py", "w")
+    # gets the name of the file w/o .txt and makes a corresponding .py
+    nameLength = len(flFile.name)
+    pyFileName = flFile.name[:nameLength-4] + ".py"
+    with open(pyFileName, "w") as pyFile:
+        pyFile.write("# FeatherLang\n")
 
-# How to turn code into compiler-ready string
-# - ignore () turn them into spaces?
-# - turn spaces into \s
-# - if you find \( or \), replace with just ( or )
-# - \e at end of file if necessary
-# - ; ignore everything until end of line
+    # How recursive compiler works:
+    # readChar reads a single char from the flFile.
+    # If char is a space or equivalent, calls matchFunc function, which
+    #     matches the current value of tmpStr to the corresponding function.
+    # Else, char is a standard letter, is added to tmpStr, and readChar again.
 
-# Making compiler-ready queue:
-# 1. add chars from flFileStr to tmpCompilerStr until you meet a space or an 
-#    equivalent
-# 2. add tmpCompilerStr to compilerQueue, then set tmpCompilerStr to ""
-compilerQueue = deque([])
-flFileStr = flFile.read()
-tmpCompilerStr = ""
+    # begins the recursive char reading (acts as the compiler)
+    with open(pyFileName, "a") as pyFile:
+        readChar(pyFile, flFile, "")
 
-for x in flFileStr:
+def readChar(pyFile, flFile, tmpStr):
+    x = flFile.read(1)
+
     match x:
-        # Spaces and their equivalents
-        case ' ':
-            compilerQueue.append(tmpCompilerStr)
-            tmpCompilerStr = ""
-        case '\t':
-            compilerQueue.append(tmpCompilerStr)
-            tmpCompilerStr = ""
-        case '(':
-            compilerQueue.append(tmpCompilerStr)
-            tmpCompilerStr = ""
-        case ')':
-            compilerQueue.append(tmpCompilerStr)
-            tmpCompilerStr = ""
-        # Comments
-        case ';':
-            compilerQueue.append(x)
-        # New Lines
-        case '\n':
-            compilerQueue.append(tmpCompilerStr)
-            tmpCompilerStr = ""
-            compilerQueue.append(x)
-        # Adding regular chars
+        case " ":
+            matchFunc(pyFile, flFile, tmpStr)
+        case "(":
+            matchFunc(pyFile, flFile, tmpStr)
+        case "":
+            return
         case _:
-            tmpCompilerStr += x
+            readChar(pyFile, flFile, tmpStr + x)
 
-print(compilerQueue)
+def matchFunc(pyFile, flFile, tmpStr):
+    match tmpStr:
+        case "+":
+            mathOps(pyFile, flFile, tmpStr)
+        case "-":
+            mathOps(pyFile, flFile, tmpStr)
+        case "/":
+            mathOps(pyFile, flFile, tmpStr)
+        case "*":
+            mathOps(pyFile, flFile, tmpStr)
+        case "%":
+            mathOps(pyFile, flFile, tmpStr)
+
+def mathOps(pyFile, flFile, tmpStr):
+    pyFile.write("1 " + tmpStr + " 2")
+
+if __name__ == "__main__":
+    main()
