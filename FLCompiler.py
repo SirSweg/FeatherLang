@@ -25,9 +25,11 @@ def main():
 
     # begins the recursive char reading (acts as the compiler)
     with open(pyFileName, "a") as pyFile:
-        readChar(pyFile, flFile, "")
+        readFunc(pyFile, flFile, "")
 
-def readChar(pyFile, flFile, tmpStr):
+# Reads chars from flFile until a divide char is found, then sends the
+# full function found before the divide into matchFunc
+def readFunc(pyFile, flFile, tmpStr):
     x = flFile.read(1)
 
     match x:
@@ -38,8 +40,10 @@ def readChar(pyFile, flFile, tmpStr):
         case "":
             return
         case _:
-            readChar(pyFile, flFile, tmpStr + x)
+            readFunc(pyFile, flFile, tmpStr + x)
 
+# Matches tmpStr to its corresponding function. If there is no corresponding
+# function, readFunc is called with tmpStr reset to ""
 def matchFunc(pyFile, flFile, tmpStr):
     match tmpStr:
         case "+":
@@ -53,8 +57,29 @@ def matchFunc(pyFile, flFile, tmpStr):
         case "%":
             mathOps(pyFile, flFile, tmpStr)
 
+# Writes the math operation corresponding to tmpStr to the pyFile. Calls
+# nextWord to find the two variables for the operation.
 def mathOps(pyFile, flFile, tmpStr):
-    pyFile.write("1 " + tmpStr + " 2")
+    var1 = nextWord(flFile, "")
+    var2 = nextWord(flFile, "")
+
+    pyFile.write(var1 + " " + tmpStr + " " + var2)
+
+
+# Reads chars from the flFile until a divide is found, then returns the full
+# word found before the divide.
+def nextWord(flFile, word):
+    x = flFile.read(1)
+
+    match x:
+        case " ":
+            return word
+        case "\n":
+            return word
+        case "(":
+            return word
+        case _:
+            return nextWord(flFile, word + x)
 
 if __name__ == "__main__":
     main()
